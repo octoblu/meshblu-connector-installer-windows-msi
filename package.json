@@ -1,0 +1,23 @@
+{
+  "name": "meshblu-connector-installer-windows-msi",
+  "version": "1.0.0",
+  "description": "create meshblu-connector MSI for windows",
+  "main": "index.js",
+  "scripts": {
+    "test": "exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/octoblu/meshblu-connector-installer-windows-msi.git"
+  },
+  "keywords": [
+    "meshblu",
+    "meshblu-connector"
+  ],
+  "author": "Octoblu, Inc. <npm@octoblu.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/octoblu/meshblu-connector-installer-windows-msi/issues"
+  },
+  "homepage": "https://github.com/octoblu/meshblu-connector-installer-windows-msi#readme"
+}
