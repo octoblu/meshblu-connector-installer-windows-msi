@@ -36,16 +36,18 @@ class MeshbluConnectorInstaller {
   }
 
   build() {
-    return this.copyTemplates().then(() => this.copyPkg()).then(() => this.buildPackage()).then(() => this.signPackage())
+    return this.copyTemplates().then(() => this.copyPkg()).then(() => this.buildPackage()).then(() => this.signPackage()).then(() => this.cleanup())
+  }
+
+  cleanup() {
+    return glob(path.join(this.deployInstallersPath, "*.wixpdb")).each(file => fs.unlink(file))
   }
 
   copyPkg() {
     this.spinner.text = "Copying pkg assets"
     const destination = path.join(this.deployCachePackagePath, this.type)
     const source = path.join(this.deployPath, "bin")
-    return fs.ensureDir(destination).then(() => {
-      return fs.copy(source, destination)
-    })
+    return fs.ensureDir(destination).then(() => fs.copy(source, destination))
   }
 
   buildPackage() {
