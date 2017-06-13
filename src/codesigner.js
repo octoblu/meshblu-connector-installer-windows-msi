@@ -50,7 +50,7 @@ class CodeSigner {
         PATH: process.env.PATH,
       },
     }
-    return exec(`signtool sign /f${this.appCertPath} /p${this.certPassword} ${this.filePath}`, options)
+    return exec(`signtool sign /f ${this.appCertPath} /p ${this.certPassword} ${this.filePath}`, options)
   }
 }
 
