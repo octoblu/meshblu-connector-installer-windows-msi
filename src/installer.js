@@ -3,8 +3,8 @@ const Promise = require("bluebird")
 const glob = Promise.promisify(require("glob"))
 const parseTemplate = require("json-templates")
 const path = require("path")
-const utils = require("utils")
-const exec = utils.promisify(require("child_process").exec)
+const util = require("util")
+const exec = require("child_process").exec
 
 class MeshbluConnectorInstaller {
   constructor({ connectorPath, spinner, certPassword }) {
@@ -43,17 +43,11 @@ class MeshbluConnectorInstaller {
       .then(() => {
         return this.buildPackage()
       })
-      .then(() => {
-        return this.signPackage()
-      })
-      .then(() => {
-        return this.createDMG()
-      })
   }
 
   copyPkg() {
     this.spinner.text = "Copying pkg assets"
-    const destination = this.deployCachePackagePath
+    const destination = path.join(this.deployCachePackagePath, this.type)
     const source = path.join(this.deployPath, "bin")
     return fs.ensureDir(destination).then(() => {
       return fs.copy(source, destination)
@@ -75,16 +69,51 @@ class MeshbluConnectorInstaller {
 
     this.spinner.text = "Building package"
     const directoryWXSFile = path.join(this.deployCachePackagePath, "directory.wxs")
-    return exec(`heat.exe dir ${this.deployCachePath} -srd -dr INSTALLDIR -cg MainComponentGroup -out ${directoryWXSFile} -ke -sfrag -gg -var var.SourceDir -sreg -scom`)
+    const sourceDir = path.join(this.deployCachePackagePath, this.type)
+    const options = {
+      env: {
+        PATH: process.env.PATH + ";C:\\Program Files (x86)\\WiX Toolset v3.11\\bin",
+      },
+    }
+    let if64 = ""
+    let win64 = "no"
+    let transformOption = ""
+    let platformOption = ""
+    if (process.arch == "x64") {
+      if64 = "64"
+      win64 = "yes"
+      transformOption = `-t ${path.join(this.deployCachePackagePath, "HeatTransform.xslt")}`
+      platformOption = "-platform x64"
+    }
+    return this.exec(
+      `heat.exe dir ${sourceDir} -srd -dr INSTALLDIR -cg MainComponentGroup -out ${directoryWXSFile} -ke -sfrag -gg -var var.SourceDir -sreg -scom ${transformOption} ${platformOption}`,
+      options
+    )
       .then(() => {
-        return exec(
-          `candle.exe -dCacheDir="${this.deployCachePath}" -dSourceDir="${this.deployCachePackagePath}" -dProductVersion="${this.version}" ${this.deployCachePackagePath} -o ${this
-            .deployCachePackagePath}\\ -ext WiXUtilExtension`
+        const resourceDirName = path.join(__dirname, "..", "resources")
+        return this.exec(
+          `candle.exe ${platformOption} -dWin64="${win64}"-dCacheDir="${this.deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this
+            .type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this.version}" -dIf64="${if64}" ${this.deployCachePackagePath}\\*.wxs -o ${this
+            .deployCachePackagePath}\\ -ext WiXUtilExtension`,
+          options
         )
       })
       .then(() => {
-        return exec(`light.exe -o ${this.installerMSIPath} ${this.deployCachePackagePath}\*.wixobj -cultures:en-US -ext WixUIExtension.dll -ext WiXUtilExtension`)
+        return this.exec(`light.exe -o ${this.installerMSIPath} ${this.deployCachePackagePath}\\*.wixobj -cultures:en-US -ext WixUIExtension.dll -ext WiXUtilExtension`, options)
       })
+  }
+
+  exec(cmd, options) {
+    return new Promise((resolve, reject) => {
+      exec(cmd, options, (error, stdout, stderr) => {
+        if (error) {
+          error.stdout = stdout
+          error.stderr = stderr
+          return reject(error)
+        }
+        return resolve(stdout, stderr)
+      })
+    })
   }
 
   copyTemplates() {
@@ -113,7 +142,7 @@ class MeshbluConnectorInstaller {
   }
 
   getFilePath(file) {
-    const fileRegex = new RegExp(`${path.sep}templates${path.sep}(.*)$`)
+    const fileRegex = new RegExp(`/templates/(.*)$`)
     const matches = file.match(fileRegex)
     const filePartial = matches[matches.length - 1]
     const filePath = path.join(this.deployCachePackagePath, filePartial)

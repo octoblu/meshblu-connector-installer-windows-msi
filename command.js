@@ -86,6 +86,7 @@ class MeshbluConnectorInstallerWindowsMSICommand {
       await installer.build()
     } catch (error) {
       console.error(error.stack)
+      console.log(error.stdout, error.stderr)
       return spinner.fail(error.message)
     }
     spinner.succeed("Ship it!")
