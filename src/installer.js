@@ -3,8 +3,8 @@ const Promise = require("bluebird")
 const glob = Promise.promisify(require("glob"))
 const parseTemplate = require("json-templates")
 const path = require("path")
-const util = require("util")
 const exec = require("child_process").exec
+const { CodeSigner } = require("./codesigner")
 
 class MeshbluConnectorInstaller {
   constructor({ connectorPath, spinner, certPassword }) {
@@ -36,13 +36,7 @@ class MeshbluConnectorInstaller {
   }
 
   build() {
-    return this.copyTemplates()
-      .then(() => {
-        return this.copyPkg()
-      })
-      .then(() => {
-        return this.buildPackage()
-      })
+    return this.copyTemplates().then(() => this.copyPkg()).then(() => this.buildPackage()).then(() => this.signPackage())
   }
 
   copyPkg() {
@@ -55,18 +49,6 @@ class MeshbluConnectorInstaller {
   }
 
   buildPackage() {
-    // $script_dir = Get-ScriptDirectory
-    // $shared_dir = "$script_dir\..\win32-shared"
-    // $output_dir = "$script_dir\output"
-    // $cache_dir = "$script_dir\..\cache\$platform"
-    // $tmp_dir = [io.path]::GetTempFileName()
-    // $wix_template_dir = "$shared_dir\wix"
-    // $wix_dir = "C:\Program Files (x86)\WiX Toolset v3.10\bin"
-
-    // . $wix_dir\heat.exe dir $tmp_dir -srd -dr INSTALLDIR -cg MainComponentGroup -out $shared_dir\wix\directory.wxs -ke -sfrag -gg -var var.SourceDir -sreg -scom
-    // . $wix_dir\candle.exe -dCacheDir="$cache_dir" -dSourceDir="$tmp_dir" -dProductVersion="$gateblu_legal_version" $wix_template_dir\*.wxs -o $output_dir\\ -ext WiXUtilExtension
-    // . $wix_dir\light.exe -o $output_dir\GatebluService-$platform.msi $output_dir\*.wixobj -cultures:en-US -ext WixUIExtension.dll -ext WiXUtilExtension
-
     this.spinner.text = "Building package"
     const directoryWXSFile = path.join(this.deployCachePackagePath, "directory.wxs")
     const sourceDir = path.join(this.deployCachePackagePath, this.type)
@@ -114,6 +96,17 @@ class MeshbluConnectorInstaller {
         return resolve(stdout, stderr)
       })
     })
+  }
+
+  signPackage() {
+    this.spinner.text = "Signing package"
+    const codeSigner = new CodeSigner({
+      certPassword: this.certPassword,
+      filePath: this.installerMSIPath,
+      cachePath: this.deployCachePath,
+      arch: this.arch,
+    })
+    return codeSigner.sign()
   }
 
   copyTemplates() {
