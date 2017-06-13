@@ -54,7 +54,7 @@ class MeshbluConnectorInstaller {
     const sourceDir = path.join(this.deployCachePackagePath, this.type)
     const options = {
       env: {
-        PATH: process.env.PATH + ";C:\\Program Files (x86)\\WiX Toolset v3.11\\bin",
+        PATH: process.env.PATH,
       },
     }
     let if64 = ""

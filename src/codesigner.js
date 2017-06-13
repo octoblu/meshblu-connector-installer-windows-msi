@@ -47,10 +47,10 @@ class CodeSigner {
   signFile() {
     const options = {
       env: {
-        PATH: process.env.PATH + `;C:\\Program Files (x86)\\Windows Kits\\10\\bin\\${this.arch}`,
+        PATH: process.env.PATH,
       },
     }
-    return exec(`signtool /f${this.appCertPath} /p${this.certPassword} ${this.filePath}`, options)
+    return exec(`signtool sign /f${this.appCertPath} /p${this.certPassword} ${this.filePath}`, options)
   }
 }
 
