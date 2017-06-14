@@ -27,7 +27,7 @@
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFiles$(var.If64)Folder' Name='PFiles'>
         <Directory Id='MeshbluConnectors_Folder' Name='MeshbluConnectors'>
-          <Directory Id='INSTALLDIR' Name='$(var.Type)'>
+          <Directory Id='INSTALLDIR' Name='$(var.DestinationPath)'>
           </Directory>
         </Directory>
       </Directory>

@@ -25,6 +25,13 @@ const CLI_OPTIONS = [
     default: ".",
   },
   {
+    names: ["destination-path"],
+    type: "string",
+    env: "MESHBLU_DESTINATION_PATH",
+    help: "Path for bin files to be placed in installer",
+    helpArg: "PATH",
+  },
+  {
     names: ["cert-password"],
     type: "string",
     env: "MESHBLU_CONNECTOR_CERT_PASSWORD",
@@ -66,7 +73,7 @@ class MeshbluConnectorInstallerWindowsMSICommand {
 
   async run() {
     const options = this.parseArgv({ argv: this.argv })
-    const { connector_path, cert_password } = options
+    const { connector_path, cert_password, destination_path } = options
     var errors = []
     if (!connector_path) errors.push(new Error("MeshbluConnectorInstallerWindowsMSICommand requires --connector-path or MESHBLU_CONNETOR_PATH"))
     if (!cert_password) errors.push(new Error("MeshbluConnectorInstallerWindowsMSICommand requires --cert-password or MESHBLU_CONNECTOR_CERT_PASSWORD"))
@@ -81,12 +88,10 @@ class MeshbluConnectorInstallerWindowsMSICommand {
 
     const spinner = ora("Building package").start()
 
-    const installer = new MeshbluConnectorInstaller({ connectorPath: path.resolve(connector_path), spinner, certPassword: cert_password })
+    const installer = new MeshbluConnectorInstaller({ connectorPath: path.resolve(connector_path), destinationPath: destination_path, spinner, certPassword: cert_password })
     try {
       await installer.build()
     } catch (error) {
-      console.error(error.stack)
-      console.log(error.stdout, error.stderr)
       return spinner.fail(error.message)
     }
     spinner.succeed("Ship it!")

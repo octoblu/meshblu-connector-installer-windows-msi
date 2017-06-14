@@ -7,7 +7,7 @@ const exec = require("child_process").exec
 const { CodeSigner } = require("./codesigner")
 
 class MeshbluConnectorInstaller {
-  constructor({ connectorPath, spinner, certPassword }) {
+  constructor({ connectorPath, spinner, certPassword, destinationPath }) {
     this.connectorPath = path.resolve(connectorPath)
     this.spinner = spinner
     this.certPassword = certPassword
@@ -22,7 +22,7 @@ class MeshbluConnectorInstaller {
     this.deployCachePackagePath = path.join(this.deployCachePath, this.windowsPackageName)
     this.deployInstallersPath = path.join(this.deployPath, "installers")
     this.installerMSIPath = path.join(this.deployInstallersPath, this.windowsPackageName + ".msi")
-    this.windowsLibraryPath = `/Library/MeshbluConnectors/${this.type}`
+    this.destinationPath = destinationPath || this.type
     this.templateData = {
       type: this.type,
       version: this.version,
@@ -48,18 +48,26 @@ class MeshbluConnectorInstaller {
   }
 
   build() {
-    return this.copyTemplates().then(() => this.copyPkg()).then(() => this.buildPackage()).then(() => this.signPackage()).then(() => this.cleanup())
+    return this.copyTemplates().then(() => this.copyAssets()).then(() => this.buildPackage()).then(() => this.signPackage()).then(() => this.cleanup())
   }
 
   cleanup() {
     return glob(path.join(this.deployInstallersPath, "*.wixpdb")).each(file => fs.unlink(file))
   }
 
-  copyPkg() {
+  copyAssets() {
     this.spinner.text = "Copying pkg assets"
     const destination = path.join(this.deployCachePackagePath, this.type)
     const source = path.join(this.deployPath, "bin")
-    return fs.ensureDir(destination).then(() => fs.copy(source, destination))
+    return fs
+      .pathExists(source)
+      .then(exists => {
+        if (!exists) {
+          return Promise.reject(new Error(`Source path does not exist: ${source}`))
+        }
+        return fs.ensureDir(destination)
+      })
+      .then(() => fs.copy(source, destination))
   }
 
   buildPackage() {
@@ -88,9 +96,9 @@ class MeshbluConnectorInstaller {
       .then(() => {
         const resourceDirName = path.join(__dirname, "..", "resources")
         return this.exec(
-          `candle.exe ${platformOption} -dWin64="${win64}"-dCacheDir="${this.deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this
-            .type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this.version}" -dIf64="${if64}" ${this.deployCachePackagePath}\\*.wxs -o ${this
-            .deployCachePackagePath}\\ -ext WiXUtilExtension`,
+          `candle.exe ${platformOption} -dWin64="${win64}" -dDestinationPath="${this.destinationPath}" -dCacheDir="${this
+            .deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this.type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this.version}" -dIf64="${if64}" ${this
+            .deployCachePackagePath}\\*.wxs -o ${this.deployCachePackagePath}\\ -ext WiXUtilExtension`,
           options
         )
       })
