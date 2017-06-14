@@ -15,8 +15,9 @@ class MeshbluConnectorInstaller {
     this.type = this.packageJSON.name
     this.version = this.packageJSON.version
     this.arch = this.getArch()
+    this.target = this.getTarget()
     this.windowsPackageName = `${this.type}_${this.version}-${this.arch}`
-    this.deployPath = path.join(this.connectorPath, "deploy")
+    this.deployPath = path.join(this.connectorPath, "deploy", this.target)
     this.deployCachePath = path.join(this.deployPath, ".cache")
     this.deployCachePackagePath = path.join(this.deployCachePath, this.windowsPackageName)
     this.deployInstallersPath = path.join(this.deployPath, "installers")
@@ -33,6 +34,17 @@ class MeshbluConnectorInstaller {
   getArch() {
     if (process.arch === "ia32") return "windows-x86"
     return "windows-x64"
+  }
+
+  getTarget() {
+    let { arch, platform } = process
+    if (platform === "darwin") platform = "macos"
+    if (platform === "win32") platform = "win"
+    if (arch === "ia32") arch = "x86"
+    if (arch === "arm") arch = "armv7"
+
+    const nodeVersion = "8"
+    return `node${nodeVersion}-${platform}-${arch}`
   }
 
   build() {
