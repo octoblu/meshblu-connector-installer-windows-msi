@@ -5,6 +5,7 @@ const parseTemplate = require("json-templates")
 const path = require("path")
 const exec = require("child_process").exec
 const { CodeSigner } = require("./codesigner")
+const debug = require("debug")("meshblu-connector-installer-windows-msi")
 
 class MeshbluConnectorInstaller {
   constructor({ connectorPath, spinner, certPassword, destinationPath }) {
@@ -59,6 +60,7 @@ class MeshbluConnectorInstaller {
     this.spinner.text = "Copying pkg assets"
     const destination = path.join(this.deployCachePackagePath, this.type)
     const source = path.join(this.deployPath, "bin")
+    debug("copy assets", { destination, source })
     return fs
       .pathExists(source)
       .then(exists => {
@@ -72,6 +74,7 @@ class MeshbluConnectorInstaller {
 
   buildPackage() {
     this.spinner.text = "Building package"
+    debug("build package")
     const directoryWXSFile = path.join(this.deployCachePackagePath, "directory.wxs")
     const sourceDir = path.join(this.deployCachePackagePath, this.type)
     const options = {
@@ -121,6 +124,7 @@ class MeshbluConnectorInstaller {
   }
 
   signPackage() {
+    debug("signing package")
     this.spinner.text = "Signing package"
     const codeSigner = new CodeSigner({
       certPassword: this.certPassword,
@@ -132,6 +136,7 @@ class MeshbluConnectorInstaller {
   }
 
   copyTemplates() {
+    debug("processing templates")
     this.spinner.text = "Processing templates"
     const packageTemplatePath = path.resolve(path.join(this.connectorPath, ".installer", "windows", "templates", "**/*"))
     const defaultTemplatePath = path.resolve(path.join(__dirname, "..", "templates", "**/*"))
