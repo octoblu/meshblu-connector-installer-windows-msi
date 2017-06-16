@@ -187,7 +187,6 @@ class MeshbluConnectorInstaller {
     const filePath = this.getFilePath(file)
     const fileDirPath = path.dirname(filePath)
     return fs.ensureDir(fileDirPath).then(() => {
-      console.log({ file, filePath })
       return fs.copy(file, filePath, { overwrite: true })
     })
   }
