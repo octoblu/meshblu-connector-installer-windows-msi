@@ -6,6 +6,7 @@ const path = require("path")
 const exec = require("child_process").exec
 const { CodeSigner } = require("./codesigner")
 const debug = require("debug")("meshblu-connector-installer-windows-msi")
+const uuidByString = require('uuid-by-string')
 
 class MeshbluConnectorInstaller {
   constructor({ connectorPath, spinner, certPassword, destinationPath, userInstall }) {
@@ -103,8 +104,9 @@ class MeshbluConnectorInstaller {
       .then(() => {
         const resourceDirName = path.join(__dirname, "..", "resources")
         const installScope = this.userInstall ? "perUser" : "perMachine"
+        const upgradeCode = uuidByString(`${this.type}-${installScope}`)
         return this.exec(
-          `candle.exe ${archOption} -dWin64="${win64}" -dInstallScope="${installScope}" -dDestinationPath="${this.destinationPath}" -dCacheDir="${this
+          `candle.exe ${archOption} -dWin64="${win64}" -dUpgradeCode="${upgradeCode}" -dInstallScope="${installScope}" -dDestinationPath="${this.destinationPath}" -dCacheDir="${this
             .deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this.type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this.version}" -dIf64="${if64}" ${this
             .deployCachePackagePath}\\*.wxs -o ${this.deployCachePackagePath}\\ -ext WiXUtilExtension`,
           options

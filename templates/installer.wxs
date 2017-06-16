@@ -3,7 +3,7 @@
      xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
 
   <Product Id="*"
-          UpgradeCode="481835F6-B008-45AF-B062-4FF2F972AE6D"
+          UpgradeCode="$(var.UpgradeCode)"
           Language='1033' Codepage='1252' Version='$(var.ProductVersion)'
           Name="$(var.Type)"
           Manufacturer='Octoblu'>
@@ -12,7 +12,7 @@
           Comments='Blaaaa' Manufacturer='Octoblu'
           InstallerVersion='500' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
-    <MajorUpgrade DowngradeErrorMessage="Can’t downgrade." />
+    <MajorUpgrade AllowDowngrades="yes" IgnoreRemoveFailure="yes" />
 
     <Media Id='1' EmbedCab='yes' Cabinet="main.cab" />
 
@@ -25,14 +25,7 @@
     <Property Id="MSIUSEREALADMINDETECTION" Value="1" />
     <Property Id="ASSISTANCE_START_VIA_REGISTRY">1</Property>
 
-    <Directory Id='TARGETDIR' Name='SourceDir'>
-      <Directory Id='ProgramFiles$(var.If64)Folder' Name='PFiles'>
-        <Directory Id='MeshbluConnectors_Folder' Name='MeshbluConnectors'>
-          <Directory Id='INSTALLDIR' Name='$(var.DestinationPath)'>
-          </Directory>
-        </Directory>
-      </Directory>
-    </Directory>
+    <?include directory.wxi ?>
 
     <Feature Id='Complete' Level='1'>
       <ComponentGroupRef Id='MainComponentGroup' />

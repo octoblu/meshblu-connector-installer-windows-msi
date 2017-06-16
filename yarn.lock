@@ -216,6 +216,10 @@ universalify@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/universalify/-/universalify-0.1.0.tgz#9eb1c4651debcc670cc94f1a75762332bb967778"
 
+uuid-by-string@^0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/uuid-by-string/-/uuid-by-string-0.2.2.tgz#8096fd9a29799a751bd30b6a56ea81eabf116180"
+
 wrappy@1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/wrappy/-/wrappy-1.0.2.tgz#b5243d8f3ec1aa35f1364605bc0d1036e30ab69f"
