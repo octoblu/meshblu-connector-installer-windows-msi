@@ -145,7 +145,8 @@ class MeshbluConnectorInstaller {
     this.spinner.text = "Processing templates"
     const packageTemplatePath = path.resolve(path.join(this.connectorPath, ".installer", "windows", this.templatesPath, "**/*"))
     const defaultTemplatePath = path.resolve(path.join(__dirname, "..", this.templatesPath, "**/*"))
-    return this.findTemplatesFromPaths([packageTemplatePath, defaultTemplatePath]).each(templates => {
+    console.log(packageTemplatePath)
+    return this.findTemplatesFromPaths([defaultTemplatePath, packageTemplatePath]).each(templates => {
       return this.processTemplates(templates)
     })
   }
@@ -159,6 +160,7 @@ class MeshbluConnectorInstaller {
   processTemplates(templates) {
     return Promise.map(templates, template => {
       const filename = path.basename(template)
+      console.log(template, filename, filename.indexOf("_"))
       if (filename.indexOf("_") == 0) {
         return this.processTemplate(template)
       }
@@ -187,6 +189,7 @@ class MeshbluConnectorInstaller {
     const filePath = this.getFilePath(file)
     const fileDirPath = path.dirname(filePath)
     return fs.ensureDir(fileDirPath).then(() => {
+      console.log({ file, filePath })
       return fs.copy(file, filePath, { overwrite: true })
     })
   }

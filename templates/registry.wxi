@@ -1,0 +1,13 @@
+<Include>
+ <!-- Example windows registry entry -->
+ <!-- <Component Id="RunMeshbluConnectorPM2" Guid="AAA2820D-681E-4F57-A5DC-3E9B41B89F48" Directory="INSTALLDIR">
+   <RegistryValue Id="MeshbluConnectorPM2.rst" Root="HKMU" Action="write"
+                  Key="Software\Microsoft\Windows\CurrentVersion\Run"
+                  Name="MeshbluConnectorPM2"
+                  Value="[INSTALLDIR]meshblu-connector-pm2.exe"
+                  Type="string" />
+   <Condition>ASSISTANCE_START_VIA_REGISTRY</Condition>
+ </Component>
+ <ComponentRef Id="RunMeshbluConnectorPM2" />
+ -->
+</Include>
