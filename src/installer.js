@@ -8,8 +8,10 @@ const { CodeSigner } = require("./codesigner")
 const debug = require("debug")("meshblu-connector-installer-windows-msi")
 
 class MeshbluConnectorInstaller {
-  constructor({ connectorPath, spinner, certPassword, destinationPath }) {
-    this.connectorPath = path.resolve(connectorPath)
+  constructor({ connectorPath, spinner, certPassword, destinationPath, userInstall }) {
+    this.connectorPath = connectorPath
+    this.templatesPath = "templates"
+    this.userInstall = userInstall
     this.spinner = spinner
     this.certPassword = certPassword
     this.packageJSON = fs.readJsonSync(path.join(this.connectorPath, "package.json"))
@@ -22,7 +24,7 @@ class MeshbluConnectorInstaller {
     this.deployCachePath = path.join(this.deployPath, ".cache")
     this.deployCachePackagePath = path.join(this.deployCachePath, this.windowsPackageName)
     this.deployInstallersPath = path.join(this.deployPath, "installers")
-    this.installerMSIPath = path.join(this.deployInstallersPath, this.windowsPackageName + ".msi")
+    this.installerMSIPath = path.join(this.deployInstallersPath, this.windowsPackageName + (this.userInstall ? "-user" : "") + ".msi")
     this.destinationPath = destinationPath || this.type
     this.templateData = {
       type: this.type,
@@ -86,11 +88,13 @@ class MeshbluConnectorInstaller {
     let win64 = "no"
     let transformOption = ""
     let platformOption = ""
+    let archOption = "-arch x86"
     if (process.arch == "x64") {
       if64 = "64"
       win64 = "yes"
       transformOption = `-t ${path.join(this.deployCachePackagePath, "HeatTransform.xslt")}`
       platformOption = "-platform x64"
+      archOption = "-arch x64"
     }
     return this.exec(
       `heat.exe dir ${sourceDir} -srd -dr INSTALLDIR -cg MainComponentGroup -out ${directoryWXSFile} -ke -sfrag -gg -var var.SourceDir -sreg -scom ${transformOption} ${platformOption}`,
@@ -98,8 +102,9 @@ class MeshbluConnectorInstaller {
     )
       .then(() => {
         const resourceDirName = path.join(__dirname, "..", "resources")
+        const installScope = this.userInstall ? "perUser" : "perMachine"
         return this.exec(
-          `candle.exe ${platformOption} -dWin64="${win64}" -dDestinationPath="${this.destinationPath}" -dCacheDir="${this
+          `candle.exe ${archOption} -dWin64="${win64}" -dInstallScope="${installScope}" -dDestinationPath="${this.destinationPath}" -dCacheDir="${this
             .deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this.type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this.version}" -dIf64="${if64}" ${this
             .deployCachePackagePath}\\*.wxs -o ${this.deployCachePackagePath}\\ -ext WiXUtilExtension`,
           options
@@ -138,8 +143,8 @@ class MeshbluConnectorInstaller {
   copyTemplates() {
     debug("processing templates")
     this.spinner.text = "Processing templates"
-    const packageTemplatePath = path.resolve(path.join(this.connectorPath, ".installer", "windows", "templates", "**/*"))
-    const defaultTemplatePath = path.resolve(path.join(__dirname, "..", "templates", "**/*"))
+    const packageTemplatePath = path.resolve(path.join(this.connectorPath, ".installer", "windows", this.templatesPath, "**/*"))
+    const defaultTemplatePath = path.resolve(path.join(__dirname, "..", this.templatesPath, "**/*"))
     return this.findTemplatesFromPaths([packageTemplatePath, defaultTemplatePath]).each(templates => {
       return this.processTemplates(templates)
     })
@@ -162,7 +167,7 @@ class MeshbluConnectorInstaller {
   }
 
   getFilePath(file) {
-    const fileRegex = new RegExp(`/templates/(.*)$`)
+    const fileRegex = new RegExp(`/${this.templatesPath}/(.*)$`)
     const matches = file.match(fileRegex)
     const filePartial = matches[matches.length - 1]
     const filePath = path.join(this.deployCachePackagePath, filePartial)

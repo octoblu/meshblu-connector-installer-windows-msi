@@ -27,9 +27,15 @@ const CLI_OPTIONS = [
   {
     names: ["destination-path"],
     type: "string",
-    env: "MESHBLU_DESTINATION_PATH",
+    env: "MESHBLU_CONNECTOR_DESTINATION_PATH",
     help: "Path for bin files to be placed in installer",
     helpArg: "PATH",
+  },
+  {
+    names: ["user-install"],
+    type: "bool",
+    env: "MESHBLU_CONNECTOR_USER_INSTALL",
+    help: "Creates a per-user installer",
   },
   {
     names: ["cert-password"],
@@ -71,9 +77,9 @@ class MeshbluConnectorInstallerWindowsMSICommand {
     return opts
   }
 
-  async run() {
+  run() {
     const options = this.parseArgv({ argv: this.argv })
-    const { connector_path, cert_password, destination_path } = options
+    const { connector_path, cert_password, destination_path, user_install } = options
     var errors = []
     if (!connector_path) errors.push(new Error("MeshbluConnectorInstallerWindowsMSICommand requires --connector-path or MESHBLU_CONNETOR_PATH"))
     if (!cert_password) errors.push(new Error("MeshbluConnectorInstallerWindowsMSICommand requires --cert-password or MESHBLU_CONNECTOR_CERT_PASSWORD"))
@@ -88,13 +94,17 @@ class MeshbluConnectorInstallerWindowsMSICommand {
 
     const spinner = ora("Building package").start()
 
-    const installer = new MeshbluConnectorInstaller({ connectorPath: path.resolve(connector_path), destinationPath: destination_path, spinner, certPassword: cert_password })
-    try {
-      await installer.build()
-    } catch (error) {
-      return spinner.fail(error.message)
-    }
-    spinner.succeed("Ship it!")
+    const installer = new MeshbluConnectorInstaller({
+      connectorPath: path.resolve(connector_path),
+      destinationPath: destination_path,
+      userInstall: user_install,
+      spinner,
+      certPassword: cert_password,
+    })
+    return installer.build().then(() => spinner.succeed("Ship it!")).catch(error => {
+      spinner.fail(error.message)
+      return Promise.reject(error)
+    })
   }
 
   die(error) {
@@ -104,6 +114,16 @@ class MeshbluConnectorInstallerWindowsMSICommand {
 }
 
 const command = new MeshbluConnectorInstallerWindowsMSICommand({ argv: process.argv })
-command.run().catch(error => {
-  console.error(error)
-})
+command
+  .run()
+  .then(() => {
+    process.exit(0)
+  })
+  .catch(error => {
+    if (error) {
+      if (error.stdout) console.error(error.stdout)
+      if (error.stderr) console.error(error.stderr)
+      console.error(error)
+    }
+    process.exit(1)
+  })

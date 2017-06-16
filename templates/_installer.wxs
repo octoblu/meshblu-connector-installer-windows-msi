@@ -8,9 +8,9 @@
           Name="$(var.Type)"
           Manufacturer='Octoblu'>
 
-    <Package Id='*' Keywords='Installer' Description='$(var.Type)'
+    <Package Id='*' InstallScope="$(var.InstallScope)" Keywords='Installer' Description='$(var.Type)'
           Comments='Blaaaa' Manufacturer='Octoblu'
-          InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+          InstallerVersion='500' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
     <MajorUpgrade DowngradeErrorMessage="Can’t downgrade." />
 
@@ -23,6 +23,7 @@
     <Icon Id="icon.ico" SourceFile="$(var.ResourceDir)\connector.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
     <Property Id="MSIUSEREALADMINDETECTION" Value="1" />
+    <Property Id="ASSISTANCE_START_VIA_REGISTRY">1</Property>
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFiles$(var.If64)Folder' Name='PFiles'>
@@ -40,6 +41,10 @@
     <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
 
     <UIRef Id="WixUI" />
-    <Property Id="ALLUSERS" Value="1"></Property>
+
+    <?if $(var.InstallScope) = perUser ?>
+      <Property Id='ALLUSERS' Value='2' />
+      <Property Id='MSIINSTALLPERUSER' Value='1' />
+    <?endif ?>
   </Product>
 </Wix>
