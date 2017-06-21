@@ -19,8 +19,7 @@ const CLI_OPTIONS = [
   {
     names: ["destination-path"],
     type: "string",
-    required: true,
-    env: "MESHBLU_DESTINATION_PATH",
+    env: "MESHBLU_CONNECTOR_DESTINATION_PATH",
     help: "Path for bin files to be placed in installer",
     helpArg: "PATH",
     completionType: "file",
