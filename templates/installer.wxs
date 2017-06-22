@@ -26,6 +26,7 @@
     <Property Id="ASSISTANCE_START_VIA_REGISTRY">1</Property>
 
     <?include directory.wxi ?>
+    <?include inifile.wxi ?>
 
     <Feature Id='Complete' Level='1'>
       <ComponentGroupRef Id='MainComponentGroup' />

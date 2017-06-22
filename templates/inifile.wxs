@@ -1,0 +1,6 @@
+<Include>
+ <!-- Example inifile -->
+ <!--
+ <IniFile Id="iniconnectorhome" Action="addLine" Directory="[INSTALLDIR]" Name="env.ini" Section="Environment" Key="MESHBLU_CONNECTOR_CONNECTOR_HOME" Value="[INSTALLDIR]" />
+ -->
+</Include>
