@@ -4,7 +4,14 @@
       <Directory Id='MeshbluConnectors_Folder' Name='MeshbluConnectors'>
         <Directory Id='MeshbluConnectorsConnectors_Folder' Name='connectors'>
           <Directory Id='INSTALLDIR' Name='$(var.DestinationPath)'>
-            <?include inifile.wxi ?>
+          <!-- Example inifile -->
+          <!--
+          <Component Id="envini_file_comp" Guid="6F2F28B7-7B07-4711-A981-CF7C0000A6C7">
+            <File Source="[INSTALLDIR]env.ini" Id="envini_file" KeyPath="yes" />
+            <IniFile Id="envini" Action="addLine" Directory="[INSTALLDIR]" Name="env.ini" Section="environment" Key="MESHBLU_CONNECTOR_HOME" Value="[INSTALLDIR].." />
+            <IniFile Id="envini" Action="addLine" Directory="[INSTALLDIR]" Name="env.ini" Section="environment" Key="MESHBLU_CONNECTOR_PM2_HOME" Value="[INSTALLDIR]..\meshblu-connector-pm2" />
+          </Component>
+          -->
           </Directory>
         </Directory>
       </Directory>
