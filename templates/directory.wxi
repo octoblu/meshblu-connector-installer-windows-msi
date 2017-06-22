@@ -4,6 +4,7 @@
       <Directory Id='MeshbluConnectors_Folder' Name='MeshbluConnectors'>
         <Directory Id='MeshbluConnectorsConnectors_Folder' Name='connectors'>
           <Directory Id='INSTALLDIR' Name='$(var.DestinationPath)'>
+            <?include inifile.wxi ?>
           </Directory>
         </Directory>
       </Directory>
