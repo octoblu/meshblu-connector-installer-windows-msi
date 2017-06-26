@@ -22,7 +22,6 @@ const CLI_OPTIONS = [
     env: "MESHBLU_CONNECTOR_DESTINATION_PATH",
     help: "Path for bin files to be placed in installer",
     helpArg: "PATH",
-    completionType: "file",
   },
   {
     names: ["cert-password"],
@@ -63,22 +62,21 @@ class MeshbluConnectorInstallerWindowsMSICommand {
     })
     return installer.build().then(() => spinner.succeed("Ship it!")).catch(error => {
       spinner.fail(error.message)
-      return Promise.reject(error)
+      throw error
     })
+  }
+
+  die(error) {
+    this.octoDash.die(error)
   }
 }
 
 const command = new MeshbluConnectorInstallerWindowsMSICommand({ argv: process.argv })
 command
   .run()
+  .catch(error => {
+    command.die(error)
+  })
   .then(() => {
     process.exit(0)
-  })
-  .catch(error => {
-    if (error) {
-      if (error.stdout) console.error(error.stdout)
-      if (error.stderr) console.error(error.stderr)
-      console.error(error)
-    }
-    process.exit(1)
   })
