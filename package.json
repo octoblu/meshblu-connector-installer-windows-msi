@@ -1,6 +1,6 @@
 {
   "name": "meshblu-connector-installer-windows-msi",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "description": "create meshblu-connector MSI for windows",
   "main": "index.js",
   "scripts": {

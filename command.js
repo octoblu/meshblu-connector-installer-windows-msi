@@ -60,10 +60,13 @@ class MeshbluConnectorInstallerWindowsMSICommand {
       certPassword,
       spinner,
     })
-    return installer.build().then(() => spinner.succeed("Ship it!")).catch(error => {
-      spinner.fail(error.message)
-      throw error
-    })
+    return installer
+      .build()
+      .catch(error => {
+        spinner.fail(error.message)
+        throw error
+      })
+      .then(() => spinner.succeed("Ship it!"))
   }
 
   die(error) {
