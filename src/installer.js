@@ -1,12 +1,12 @@
 const fs = require("fs-extra")
 const Promise = require("bluebird")
 const glob = Promise.promisify(require("glob"))
-const parseTemplate = require("json-templates")
 const path = require("path")
 const exec = require("child_process").exec
 const { CodeSigner } = require("./codesigner")
 const debug = require("debug")("meshblu-connector-installer-windows-msi")
-const uuidByString = require('uuid-by-string')
+const uuidByString = require("uuid-by-string")
+const JSONTemplateFiles = require("json-template-files")
 
 class MeshbluConnectorInstaller {
   constructor({ connectorPath, spinner, certPassword, destinationPath, userInstall }) {
@@ -106,9 +106,9 @@ class MeshbluConnectorInstaller {
         const installScope = this.userInstall ? "perUser" : "perMachine"
         const upgradeCode = uuidByString(`${this.type}-${installScope}`)
         return this.exec(
-          `candle.exe ${archOption} -dWin64="${win64}" -dUpgradeCode="${upgradeCode}" -dInstallScope="${installScope}" -dDestinationPath="${this.destinationPath}" -dCacheDir="${this
-            .deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this.type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this.version}" -dIf64="${if64}" ${this
-            .deployCachePackagePath}\\*.wxs -o ${this.deployCachePackagePath}\\ -ext WiXUtilExtension`,
+          `candle.exe ${archOption} -dWin64="${win64}" -dUpgradeCode="${upgradeCode}" -dInstallScope="${installScope}" -dDestinationPath="${this
+            .destinationPath}" -dCacheDir="${this.deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this.type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this
+            .version}" -dIf64="${if64}" ${this.deployCachePackagePath}\\*.wxs -o ${this.deployCachePackagePath}\\ -ext WiXUtilExtension`,
           options
         )
       })
@@ -147,50 +147,12 @@ class MeshbluConnectorInstaller {
     this.spinner.text = "Processing templates"
     const packageTemplatePath = path.resolve(path.join(this.connectorPath, ".installer", "windows", this.templatesPath, "**/*"))
     const defaultTemplatePath = path.resolve(path.join(__dirname, "..", this.templatesPath, "**/*"))
-    return this.findTemplatesFromPaths([defaultTemplatePath, packageTemplatePath]).each(templates => {
-      return this.processTemplates(templates)
-    })
-  }
-
-  findTemplatesFromPaths(templatePaths) {
-    return Promise.map(templatePaths, templatePath => {
-      return glob(templatePath, { nodir: true })
-    })
-  }
-
-  processTemplates(templates) {
-    return Promise.map(templates, template => {
-      const filename = path.basename(template)
-      if (filename.indexOf("_") == 0) {
-        return this.processTemplate(template)
-      }
-      return this.copyFile(template)
-    })
-  }
-
-  getFilePath(file) {
-    const fileRegex = new RegExp(`/${this.templatesPath}/(.*)$`)
-    const matches = file.match(fileRegex)
-    const filePartial = matches[matches.length - 1]
-    const filePath = path.join(this.deployCachePackagePath, filePartial)
-    const { base, dir } = path.parse(filePath)
-    const newBase = base.replace(/^_/, "")
-    return path.join(dir, newBase)
-  }
-
-  processTemplate(file) {
-    const template = parseTemplate(fs.readFileSync(file, "utf-8"))
-    const results = template(this.templateData)
-    const filePath = this.getFilePath(file)
-    return fs.outputFile(filePath, results)
-  }
-
-  copyFile(file) {
-    const filePath = this.getFilePath(file)
-    const fileDirPath = path.dirname(filePath)
-    return fs.ensureDir(fileDirPath).then(() => {
-      return fs.copy(file, filePath, { overwrite: true })
-    })
+    return new JSONTemplateFiles({
+      packageTemplatePath,
+      defaultTemplatePath,
+      templateData: this.templateData,
+      outputPath: this.deployCachePackagePath,
+    }).process()
   }
 }
 
