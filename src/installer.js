@@ -104,9 +104,10 @@ class MeshbluConnectorInstaller {
       .then(() => {
         const resourceDirName = path.join(__dirname, "..", "resources")
         const installScope = this.userInstall ? "perUser" : "perMachine"
+        const systemSuffix = this.userInstall ? "" : "-system"
         const upgradeCode = uuidByString(`${this.type}-${installScope}`)
         return this.exec(
-          `candle.exe ${archOption} -dWin64="${win64}" -dUpgradeCode="${upgradeCode}" -dInstallScope="${installScope}" -dDestinationPath="${this
+          `candle.exe ${archOption} -dWin64="${win64}" -dUpgradeCode="${upgradeCode}" -dSystemSuffix="${systemSuffix}" -dInstallScope="${installScope}" -dDestinationPath="${this
             .destinationPath}" -dCacheDir="${this.deployCachePath}" -dSourceDir="${sourceDir}" -dType="${this.type}" -dResourceDir="${resourceDirName}" -dProductVersion="${this
             .version}" -dIf64="${if64}" ${this.deployCachePackagePath}\\*.wxs -o ${this.deployCachePackagePath}\\ -ext WiXUtilExtension`,
           options

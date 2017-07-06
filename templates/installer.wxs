@@ -8,7 +8,7 @@
           Name="$(var.Type)"
           Manufacturer='Octoblu'>
 
-    <Package Id='*' InstallScope="$(var.InstallScope)" Keywords='Installer' Description='$(var.Type)'
+    <Package Id='*' InstallScope="$(var.InstallScope)" Keywords='Installer' Description='$(var.Type) $(var.ProductVersion)'
           Comments='Blaaaa' Manufacturer='Octoblu'
           InstallerVersion='500' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
