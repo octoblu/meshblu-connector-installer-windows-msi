@@ -50,7 +50,7 @@ class MeshbluConnectorInstallerWindowsMSICommand {
     })
   }
 
-  async function run() {
+  async run() {
     const { connectorPath, certPassword, destinationPath, userInstall } = this.octoDash.parseOptions()
     const spinner = ora("Building package").start()
     const installer = new MeshbluConnectorInstaller({
